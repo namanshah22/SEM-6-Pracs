@@ -1,30 +1,27 @@
-import string
-
 def encrypt_vigenere(plain_text, key):
     encrypted_text = ""
-    key_length = len(key)
-    uppercase_letters = string.ascii_uppercase
-    for i,char in enumerate(plain_text):
+    for i in range(len(plain_text)):
+        char = plain_text[i]
         if char.isalpha():
-            shift = uppercase_letters.index(key[i % key_length])
-            encrypted_char = uppercase_letters[(uppercase_letters.index(char.upper()) + shift) % 26]
+            shift = ord(key[i % len(key)]) - ord('A')
+            encrypted_char = chr((ord(char) + shift - ord('A')) % 26 + ord('A'))
             encrypted_text += encrypted_char  
     return encrypted_text
 
 def decrypt_vigenere(encrypted_text, key):
     decrypted_text = ""
-    key_length = len(key)
-    uppercase_letters = string.ascii_uppercase
-    for i,char in enumerate(encrypted_text):
+    for i in range(len(encrypted_text)):
+        char = encrypted_text[i]
         if char.isalpha():
-            shift = uppercase_letters.index(key[i % key_length])
-            decrypted_char = uppercase_letters[(uppercase_letters.index(char.upper()) - shift) % 26]
+            shift = ord(key[i % len(key)]) - ord('A')
+            decrypted_char = chr((ord(char) - shift - ord('A')) % 26 + ord('A'))
             decrypted_text += decrypted_char
     return decrypted_text
 
-# Example usage
-plain_text = input("Enter Plain text: ").upper()
-key = input("Enter key: ").upper()
+plain_text = input("Enter Plain text: ")
+key = input("Enter key: ")
+plain_text = plain_text.upper()
+key = key.upper()
 
 encrypted_text = encrypt_vigenere(plain_text, key)
 print("Encrypted text:", encrypted_text)
