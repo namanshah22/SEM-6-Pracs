@@ -25,15 +25,18 @@ def detect_data_structures(code):
 
 def count_operations(code, data_structure):
     """Count the number of operations related to the identified data structure."""
-    operations = {"push_count": 0, "pop_count": 0, "total_count": 0} if data_structure == "Stack" else {"append": 0, "remove": 0, "index": 0}
+    stack_ops = ["push", "pop", "peek"]
+    array_ops = ["append", "remove", "index"]
     
-    # Find operation occurrences using regex
     if data_structure == "Stack":
-        operations["push_count"] = len(re.findall(r'\b{}\b'.format("push"), code))
-        operations["pop_count"] = len(re.findall(r'\b{}\b'.format("pop"), code))
-        operations["total_count"] = operations["push_count"] + operations["pop_count"]
-    
-    return operations
+        counts = {}
+        for op in stack_ops:
+            counts[op] = code.count(op)
+    else:  # Assume Array
+        counts = {}
+        for op in array_ops:
+            counts[op] = code.count(op)
+    return counts
 
 def analyze_code(file_path):
     """Analyze code from a file."""
@@ -49,18 +52,12 @@ def analyze_code(file_path):
     print("Operations Count:", operations_count)
 
     # Count array operations using provided snippet
-    count = 0
-    count2 = 0
-    for line in code.split("\n"):
-        if 'append' in line:
-            count += 1
-        elif 'remove' in line or 'index' in line:
-            count2 += 1
-
-    if count >= 1 or count2 >= 1:
-        print("Additional Array Operations Detected:")
-        print("No of append operations:", count)
-        print("No of remove or index operations:", count2)
+    if data_structure == "Array":
+        append_count = code.count("append")
+        remove_count = code.count("remove")
+        print("\nAdditional Array Operations Detected:")
+        print("No of append operations:", append_count)
+        print("No of remove or index operations:", remove_count)
 
     if data_structure == "Stack":
             analyze_potential_methods(code,operations_count)
@@ -74,8 +71,8 @@ def analyze_potential_methods(code,operations_count):
     print("\nPotential Methods Analysis:")
     print(f"Amortized Cost for Push Operations: {amortized_cost_push}")
     print(f"Amortized Cost for Pop Operations: {amortized_cost_pop}")
-    total_push_value3 = (amortized_cost_push-1) * operations_count["push_count"]
-    total_pop_value3 = (amortized_cost_pop-1) * operations_count["pop_count"]
+    total_push_value3 = (amortized_cost_push-1) * code.count("push")
+    total_pop_value3 = (amortized_cost_pop-1) * code.count("pop")
     print(f"Total Value for Push Operations: {total_push_value3}")
     print(f"Total Value for Pop Operations: {total_pop_value3}")
     net_value=total_push_value3 + total_pop_value3
