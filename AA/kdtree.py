@@ -1,77 +1,75 @@
+import numpy as np
+
 class Node:
-    def _init_(self, point, left=None, right=None):
+    def __init__(self, point, left=None, right=None, parent=None):
         self.point = point
         self.left = left
         self.right = right
+        self.parent = parent
 
-def build_kdtree(points, depth=0, balanced=True):
-    if not points:
+def build_unbalanced_kd_tree(points, depth=0, parent=None):
+    if len(points) == 0:
         return None
-    k = len(points[0])
-    axis = depth % k
 
-    if balanced:
-        points.sort(key=lambda x: x[axis])
-        median = len(points) // 2
-        return Node(
-            points[median],
-            left=build_kdtree(points[:median], depth + 1, balanced),
-            right=build_kdtree(points[median + 1:], depth + 1, balanced)
-        )
-    else:
-        pivot_index = 0
-        pivot = points[pivot_index]
-        left_points = [p for p in points if p[axis] < pivot[axis]]
-        right_points = [p for p in points if p[axis] > pivot[axis]]
-       
-        return Node(
-            pivot,
-            left=build_kdtree(left_points, depth + 1, balanced),
-            right=build_kdtree(right_points, depth + 1, balanced)
-        )
+    axis = depth % len(points[0])
+    root_point = points[0]
+    root = Node(root_point, parent=parent)
 
-def display_kdtree(root, depth=0):
-    if root is None:
+    left_points = [p for p in points[1:] if p[axis] < root_point[axis]]
+    right_points = [p for p in points[1:] if p[axis] >= root_point[axis]]
+
+    root.left = build_unbalanced_kd_tree(left_points, depth + 1, root)
+    root.right = build_unbalanced_kd_tree(right_points, depth + 1, root)
+
+    return root
+
+def build_balanced_kd_tree(points, depth=0, parent=None):
+    if len(points) == 0:
+        return None
+
+    axis = depth % len(points[0])
+    points_sorted = points[np.argsort(points[:, axis])]
+    median_index = (len(points_sorted)-1) // 2
+
+    median_point = points_sorted[median_index]
+    root = Node(median_point, parent=parent)
+
+    root.left = build_balanced_kd_tree(points_sorted[:median_index], depth + 1, root)
+    root.right = build_balanced_kd_tree(points_sorted[median_index + 1:], depth + 1, root)
+
+    return root
+
+def print_tree(node):
+    if node is None:
         return
-    indent = "  " * depth
-    print(indent + str(root.point))
-    print(indent + "Left:")
-    display_kdtree(root.left, depth + 1)
-    print(indent + "Right:")
-    display_kdtree(root.right, depth + 1)
+
+    parent_point = node.parent.point if node.parent else None
+    left_point = node.left.point if node.left else None
+    right_point = node.right.point if node.right else None
+
+    print(f"Point: {node.point}, Parent: {parent_point}, Left: {left_point}, Right: {right_point}")
+
+    print_tree(node.left)
+    print_tree(node.right)
 
 def main():
-    num_elements = int(input("Enter the number of elements: "))
-    dimension = int(input("Enter the dimension: "))
-    balanced_input = input("Enter 'balanced' for a balanced tree or 'unbalanced' for an unbalanced tree: ").lower() == 'balanced'
-    if balanced_input == 'balanced':
-        balanced = True
+    points = np.array([[6, 2], [7, 1], [2, 9], [3, 6], [4, 8], [8, 4], [5, 3], [1, 5], [9, 5]])
+    print("Select KD tree type:")
+    print("1. Unbalanced KD Tree")
+    print("2. Balanced KD Tree")
+    choice = int(input("Enter your choice: "))
+
+    if choice == 1:
+        print("Unbalanced KD Tree:")
+        kd_tree = build_unbalanced_kd_tree(points)
+    elif choice == 2:
+        print("Balanced KD Tree:")
+        kd_tree = build_balanced_kd_tree(points)
     else:
-        balanced = False
-    points = []
-    for i in range(num_elements):
-        point_str = input(f"Enter coordinates for point {i + 1} (in the format '(x, y)'): ")
-        point_str = point_str.strip('()')  
-        coords = [float(coord) for coord in point_str.split(',')]  
-        points.append(coords)
-
-    root = build_kdtree(points, balanced=balanced)
-    if balanced_input == 'balanced':
-        print("\n Balanced KD Tree:")
-    else:
-        print("\n Unbalanced KD Tree:")
- 
-    display_kdtree(root)
-
-if _name_ == "_main_":
-    main()
-
-def display_kdtree(root, depth=0):
-    if root is None:
+        print("Invalid choice.")
         return
-    indent = "  " * depth
-    print(indent + "Level", depth, ":", root.point)
-    print(indent + "├─ Left:")
-    display_kdtree(root.left, depth + 1)
-    print(indent + "└─ Right:")
-    display_kdtree(root.right, depth + 1)
+
+    print_tree(kd_tree)
+
+if __name__ == "__main__":
+    main()
