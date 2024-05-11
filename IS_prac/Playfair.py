@@ -54,12 +54,10 @@ def separate_same_letters(message):
     """
     index = 0
     while (index < len(message)):
-        l1 = message[index]
         # If it's the last letter and the message length is odd, append 'X'
-        if index == len(message) - 1:
-            message = message + 'X'
-            index += 2
-            continue
+        if len(message)%2!=0:
+            message+='X'
+        l1 = message[index]
         l2 = message[index + 1]
         # If two consecutive letters are the same, insert 'X' between them
         if l1 == l2:
@@ -114,19 +112,7 @@ def playfair(key, message, encrypt=True):
     
     return cipher_text
 
-# Option selection loop
-option = 1
-while(option == 1 or option == 2):
-    option = int(input("Select an option\n 1 for Encryption\n 2 for Decryption\n 3 for Exit: "))
-    if(option == 1):
-        plainText = input("Enter the Plain text: ")
-        key = input("Enter Key: ")
-        print('Encrypting')
-        print(playfair(key, plainText))
-    if(option == 2):
-        cipherText = input("Enter the cipher text: ")
-        key = input("Enter Key: ")
-        print('Decrypting')
-        print(playfair(key, cipherText, False))
-    if (option == 3):
-        break
+plainText = input("Enter the Plain text: ").upper()
+key = input("Enter Key: ").upper()
+cipherText = playfair(key, plainText)
+print(f'Encrypted:{cipherText}\nDecrypted:{playfair(key, cipherText, encrypt=False)}')
