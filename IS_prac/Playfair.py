@@ -1,51 +1,24 @@
-def create_matrix(key):
-    """
-    Create a 5x5 matrix (Playfair square) based on the given key.
-    """
-    # Convert key to uppercase to ensure consistency
-    key = key.upper()
-    
-    # Initialize a 5x5 matrix with zeros
-    matrix = []
-    for i in range(5):
-        row = []
-        for j in range(5):
-            row.append(0)
-        matrix.append(row)
-    
-    # Keep track of letters already added to the matrix
-    letters_added = []
-    
-    # Initialize row and column indices
-    row = 0
-    col = 0
-    
-    # Iterate through each letter in the key
-    for letter in key:
-        # If the letter is not already added to the matrix, add it
-        if letter not in letters_added:
-            matrix[row][col] = letter
-            letters_added.append(letter)
-        # Move to the next column if the current column is filled
-        if (col == 4):
-            col = 0
-            row += 1
-        else:
-            col += 1
-    
-    # Fill the remaining matrix positions with letters from A to Z (excluding 'J')
-    for letter in range(65, 91):
-        if letter == 74:  # Skip 'J'
-            continue
-        if chr(letter) not in letters_added:
-            letters_added.append(chr(letter))
-    
-    # Assign the remaining letters to the matrix
-    index = 0
-    for i in range(5):
-        for j in range(5):
-            matrix[i][j] = letters_added[index]
-            index += 1
+def create_matrix(key, list1=['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']):
+    key_letters = []  # List to store unique letters from the key
+    compElements = []  # List to store all unique letters including the ones from the key and default list
+    matrix = []  # List to store the final matrix
+
+    # Extract unique letters from the key and add them to key_letters and compElements
+    for i in key:
+        if i not in key_letters:
+            key_letters.append(i)
+            compElements.append(i) 
+
+    # Add remaining unique letters from the default list to compElements
+    for i in list1:
+        if i not in compElements:
+            compElements.append(i)
+
+    # Create the matrix by adding elements from compElements in chunks of 5 until compElements is empty
+    while compElements != []:
+        matrix.append(compElements[:5])
+        compElements = compElements[5:]
+
     return matrix
 
 def separate_same_letters(message):
