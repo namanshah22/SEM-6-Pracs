@@ -1,49 +1,60 @@
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.asymmetric import rsa
+import hashlib
+import math
 
-def generate_key_pair():
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-        backend=default_backend()
-    )
-    
-    public_key = private_key.public_key()
-    return private_key, public_key
+p, q = input('Enter two prime numbers: ').split()
+plain = input('Enter the plain text: ')
+p, q = int(p), int(q)
+n = p * q
+phi = (p - 1) * (q - 1)
 
-def sign_message(private_key, message):
-    signature = private_key.sign(
-        message,
-        padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH
-        ),
-        hashes.SHA256()
-    )
-    return signature
+def get_public_key(phi):
+    e = 2
+    while e < phi:
+        if math.gcd(e, phi) == 1:
+            break
+        else:
+            e += 1
+    return e
 
-def verify_signature(public_key, message, signature):
-    try:
-        public_key.verify(
-            signature,
-            message,
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256()
-        )
-        return True
-    except Exception as e:
-        print(f"Signature verification failed: {e}")
-        return False
+e = get_public_key(phi)
 
-private_key, public_key = generate_key_pair()
-message = b"Hello, this is a test message."
-signature = sign_message(private_key, message)
-print("Message:", message)
-print("Signature:", signature.hex())
-verification_result = verify_signature(public_key, message, signature)
-print("Signature Verification Result:", verification_result)
+def get_private_key(e, phi):
+    d = 2
+    while d < phi:
+        if (d * e) % phi == 1:
+            break
+        else:
+            d += 1
+    return d
+
+d = get_private_key(e, phi)
+
+print('Public key(e, n): ', e, n)
+print('Private key(d, n): ', d, n)
+
+def sign_message(message, private_key):
+    hashed_message = hashlib.md5(message.encode()).digest()
+    d, n = private_key
+    md1 = int.from_bytes(hashed_message, byteorder='big')
+    signature = pow(md1, d, n)
+    print("Signature:", signature)
+    print("md1:", md1)
+    return signature, md1
+
+def verify_signature(message, signature, public_key,md1):
+    computed_hash = hashlib.md5(message.encode()).digest()
+    e, n = public_key
+    recovered_hash = pow(signature, e, n)
+    md2 = int.from_bytes(computed_hash, byteorder='big')
+    print("Recovered hash:", recovered_hash)
+    print("md2:", md2)
+    return md1 == md2
+
+print("Message:", plain)
+
+# Sign the message using the private key
+signature, md1 = sign_message(plain, (d, n))
+
+# Verify the signature using the public key
+is_valid = verify_signature(plain, signature, (e, n),md1)
+print("Signature is valid:", is_valid)
